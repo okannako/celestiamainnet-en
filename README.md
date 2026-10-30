@@ -1,4 +1,4 @@
-# Celestia Mainnet Node Setup
+<img width="2752" height="1536" alt="mainneten" src="https://github.com/user-attachments/assets/9b50e5b6-f0af-46f6-b906-bc6514b55537" />
 
 * Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v10.5.0, celestia-node v0.34.4).
 
