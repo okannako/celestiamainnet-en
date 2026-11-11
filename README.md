@@ -1,6 +1,8 @@
 <img width="2752" height="1536" alt="mainneten" src="https://github.com/user-attachments/assets/9b50e5b6-f0af-46f6-b906-bc6514b55537" />
 
-* Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v10.5.0, celestia-node v0.34.4).
+# Celestia Mainnet Node Setup
+
+* Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v10.6.0, celestia-node v0.34.4).
 
 * The Full Storage Node type has been removed from celestia-node. If you want to keep all data, run a Bridge Node with --archival.
 
@@ -14,7 +16,7 @@
  - Bandwidth: 1 Gbps
  - Operating System: Ubuntu 24.04 (celestia-app requires glibc 2.38, it does not run on Ubuntu 22.04)
 
-NOTE: Mainnet is currently running celestia-app v10.5.0 and celestia-node v0.34.4. Fibre went live on mainnet with v10 on October 20, 2026.
+NOTE: Mainnet is currently running celestia-app v10.6.0 and celestia-node v0.34.4. Fibre went live on mainnet with v10 on October 20, 2026.
 
 ### System Updates
 ```
@@ -42,7 +44,7 @@ cd $HOME
 rm -rf celestia-app
 git clone https://github.com/celestiaorg/celestia-app.git
 cd celestia-app/
-APP_VERSION=v10.5.0
+APP_VERSION=v10.6.0
 git checkout tags/$APP_VERSION -b $APP_VERSION
 make install
 celestia-appd version
@@ -158,8 +160,8 @@ NOTE: You can follow everything on the network and your tx results on [Explorer]
 - Fibre is downloaded from the same release as celestia-app.
 ```
 cd $HOME
-wget https://github.com/celestiaorg/celestia-app/releases/download/v10.5.0/fibre_Linux_x86_64.tar.gz
-wget https://github.com/celestiaorg/celestia-app/releases/download/v10.5.0/checksums.txt
+wget https://github.com/celestiaorg/celestia-app/releases/download/v10.6.0/fibre_Linux_x86_64.tar.gz
+wget https://github.com/celestiaorg/celestia-app/releases/download/v10.6.0/checksums.txt
 sha256sum --ignore-missing --check checksums.txt
 tar -xzf fibre_Linux_x86_64.tar.gz
 sudo mv fibre /usr/local/bin/
@@ -231,6 +233,57 @@ celestia-appd config sync --fibre-home /data/fibre
 sudo systemctl restart fibre
 ```
 
+
+## Upgrading (Validator and Fibre)
+
+- This section upgrades a validator and Fibre server installed with this guide to a new release. Latest upgrade: **v10.6.0**. For future upgrades, you only need to change the APP_VERSION line.
+- We build and download the new release first and restart the services after, so your node is down for only a few seconds.
+
+### Upgrading celestia-app
+```
+APP_VERSION=v10.6.0
+cd $HOME/celestia-app
+git fetch --tags
+git checkout -f tags/$APP_VERSION
+make install
+celestia-appd version
+```
+
+- If the version is correct, restart the node.
+```
+sudo systemctl restart celestia-appd && sudo journalctl -u celestia-appd -f
+```
+
+### Upgrading Fibre
+- Fibre is downloaded from the same release as celestia-app. If you keep Fibre data somewhere other than /data/fibre, replace /data/fibre in the commands with your own folder.
+```
+APP_VERSION=v10.6.0
+cd $HOME
+wget https://github.com/celestiaorg/celestia-app/releases/download/$APP_VERSION/fibre_Linux_x86_64.tar.gz
+wget https://github.com/celestiaorg/celestia-app/releases/download/$APP_VERSION/checksums.txt
+sha256sum --ignore-missing --check checksums.txt
+tar -xzf fibre_Linux_x86_64.tar.gz
+rm fibre_Linux_x86_64.tar.gz checksums.txt
+```
+
+- If the checksum check says OK, stop Fibre, replace the binary and sync the settings.
+```
+sudo systemctl stop fibre
+sudo mv fibre /usr/local/bin/
+fibre version
+celestia-appd config sync --fibre-home /data/fibre --dry-run
+celestia-appd config sync --fibre-home /data/fibre
+sudo systemctl start fibre && sudo journalctl -u fibre -f
+```
+
+### Checking the Upgrade
+- The node should be synced (false) and your Fibre address should still be registered (found: true).
+```
+celestia-appd status 2>&1 | jq .sync_info.catching_up
+celestia-appd query valaddr provider $(celestia-appd comet show-address)
+```
+
+- If you use celestiawatch, you can check everything at once with `sudo celestiawatch doctor`.
 
 ## Bridge Node Minimum System Requirements
 
