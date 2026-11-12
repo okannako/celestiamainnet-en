@@ -2,7 +2,7 @@
 
 # Celestia Mainnet Node Setup
 
-* Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v10.6.0, celestia-node v0.34.4).
+* Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v10.6.0, celestia-node v0.35.0).
 
 * The Full Storage Node type has been removed from celestia-node. If you want to keep all data, run a Bridge Node with --archival.
 
@@ -16,7 +16,7 @@
  - Bandwidth: 1 Gbps
  - Operating System: Ubuntu 24.04 (celestia-app requires glibc 2.38, it does not run on Ubuntu 22.04)
 
-NOTE: Mainnet is currently running celestia-app v10.6.0 and celestia-node v0.34.4. Fibre went live on mainnet with v10 on October 20, 2026.
+NOTE: Mainnet is currently running celestia-app v10.6.0 and celestia-node v0.35.0. Fibre went live on mainnet with v10 on October 20, 2026.
 
 ### System Updates
 ```
@@ -27,7 +27,7 @@ sudo apt install make -y
 
 ### Installing Go
 ```
-ver="1.26.9"
+ver="1.26.10"
 cd $HOME
 wget "https://go.dev/dl/go$ver.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
@@ -302,7 +302,7 @@ sudo apt install make -y
 
 ### Installing Go
 ```
-ver="1.26.9"
+ver="1.26.10"
 cd $HOME
 wget "https://go.dev/dl/go$ver.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
@@ -319,13 +319,13 @@ cd $HOME
 rm -rf celestia-node
 git clone https://github.com/celestiaorg/celestia-node.git
 cd celestia-node/
-git checkout tags/v0.34.4
+git checkout tags/v0.35.0
 make build
 make install
 make cel-key
 ```
 
-- Version check ```celestia version``` >>> v0.34.4
+- Version check ```celestia version``` >>> v0.35.0
 
 ### Init
 - If you run your own consensus node, use its IP instead of rpc.celestia.pops.one (gRPC must be enabled on that node).
@@ -422,7 +422,7 @@ sudo apt install make -y
 
 ### Installing Go
 ```
-ver="1.26.9"
+ver="1.26.10"
 cd $HOME
 wget "https://go.dev/dl/go$ver.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
@@ -439,7 +439,7 @@ cd $HOME
 rm -rf celestia-node
 git clone https://github.com/celestiaorg/celestia-node.git
 cd celestia-node/
-git checkout tags/v0.34.4
+git checkout tags/v0.35.0
 make build
 make install
 make cel-key
@@ -500,6 +500,51 @@ sudo systemctl disable celestia-light
 sudo rm /etc/systemd/system/celestia-light.service
 rm -rf $HOME/celestia-node
 rm -rf $HOME/.celestia-light
+```
+
+## Upgrading Bridge and Light Nodes
+
+- This section upgrades a Bridge or Light Node installed with this guide to a new release. Latest upgrade: **v0.35.0**. For future upgrades, you only need to change the NODE_VERSION line.
+- v0.35.0 removes Bitswap in favor of shrex, adds JWT token revocation and includes security and stability fixes. No coordinated upgrade is required, you can upgrade at any time.
+
+### Upgrading Go
+- Building v0.35.0 requires Go 1.26.10 or later. If `go version` already shows 1.26.10 or later, skip this step.
+```
+ver="1.26.10"
+cd $HOME
+wget "https://go.dev/dl/go$ver.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "go$ver.linux-amd64.tar.gz"
+rm "go$ver.linux-amd64.tar.gz"
+source $HOME/.bash_profile
+go version
+```
+
+### Upgrading celestia-node
+```
+NODE_VERSION=v0.35.0
+cd $HOME/celestia-node
+git fetch --tags
+git checkout -f tags/$NODE_VERSION
+make build
+make install
+make cel-key
+celestia version
+```
+
+### For Bridge Nodes
+- Stop the node, update its config to the new release, then start it again.
+```
+sudo systemctl stop celestia-bridge
+celestia bridge config-update --p2p.network celestia
+sudo systemctl start celestia-bridge && sudo journalctl -u celestia-bridge -f
+```
+
+### For Light Nodes
+```
+sudo systemctl stop celestia-light
+celestia light config-update --p2p.network celestia
+sudo systemctl start celestia-light && sudo journalctl -u celestia-light -f
 ```
 
 ### Enabling bbr (Required)
