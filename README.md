@@ -2,7 +2,7 @@
 
 # Celestia Mainnet Node Setup
 
-* Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v10.6.0, celestia-node v0.35.0).
+* Follow this guide step by step to run a Validator, Fibre, Bridge and Light Node on Celestia Mainnet Beta. The guide is based on the current releases (celestia-app v11.0.0, celestia-node v0.36.0).
 
 * The Full Storage Node type has been removed from celestia-node. If you want to keep all data, run a Bridge Node with --archival.
 
@@ -16,7 +16,7 @@
  - Bandwidth: 1 Gbps
  - Operating System: Ubuntu 24.04 (celestia-app requires glibc 2.38, it does not run on Ubuntu 22.04)
 
-NOTE: Mainnet is currently running celestia-app v10.6.0 and celestia-node v0.35.0. Fibre went live on mainnet with v10 on October 20, 2026.
+NOTE: Mainnet is currently running celestia-app v11.0.0 and celestia-node v0.36.0. Fibre went live on mainnet with v10 on October 20, 2026.
 
 ### System Updates
 ```
@@ -44,7 +44,7 @@ cd $HOME
 rm -rf celestia-app
 git clone https://github.com/celestiaorg/celestia-app.git
 cd celestia-app/
-APP_VERSION=v10.6.0
+APP_VERSION=v11.0.0
 git checkout tags/$APP_VERSION -b $APP_VERSION
 make install
 celestia-appd version
@@ -160,8 +160,8 @@ NOTE: You can follow everything on the network and your tx results on [Explorer]
 - Fibre is downloaded from the same release as celestia-app.
 ```
 cd $HOME
-wget https://github.com/celestiaorg/celestia-app/releases/download/v10.6.0/fibre_Linux_x86_64.tar.gz
-wget https://github.com/celestiaorg/celestia-app/releases/download/v10.6.0/checksums.txt
+wget https://github.com/celestiaorg/celestia-app/releases/download/v11.0.0/fibre_Linux_x86_64.tar.gz
+wget https://github.com/celestiaorg/celestia-app/releases/download/v11.0.0/checksums.txt
 sha256sum --ignore-missing --check checksums.txt
 tar -xzf fibre_Linux_x86_64.tar.gz
 sudo mv fibre /usr/local/bin/
@@ -236,12 +236,14 @@ sudo systemctl restart fibre
 
 ## Upgrading (Validator and Fibre)
 
-- This section upgrades a validator and Fibre server installed with this guide to a new release. Latest upgrade: **v10.6.0**. For future upgrades, you only need to change the APP_VERSION line.
+- This section upgrades a validator and Fibre server installed with this guide to a new release. Latest upgrade: **v11.0.0**. For future upgrades, you only need to change the APP_VERSION line.
+- **v11.0.0 is a coordinated (required) upgrade.** All validators must install it. The new binary keeps running the current version until the network switches to v11, which happens 7 days after 5/6+ of the voting power has signaled. So install it now instead of waiting.
+- v11 restricts 41,963 accounts whose keys were exposed in the Keplr/Web3Auth social-login incident: they can only move funds to Web3Auth's recovery address, `celestia1atuap9kfnt6y8ykvn3437e7j3z8qffh33pzt53`.
 - We build and download the new release first and restart the services after, so your node is down for only a few seconds.
 
 ### Upgrading celestia-app
 ```
-APP_VERSION=v10.6.0
+APP_VERSION=v11.0.0
 cd $HOME/celestia-app
 git fetch --tags
 git checkout -f tags/$APP_VERSION
@@ -257,7 +259,7 @@ sudo systemctl restart celestia-appd && sudo journalctl -u celestia-appd -f
 ### Upgrading Fibre
 - Fibre is downloaded from the same release as celestia-app. If you keep Fibre data somewhere other than /data/fibre, replace /data/fibre in the commands with your own folder.
 ```
-APP_VERSION=v10.6.0
+APP_VERSION=v11.0.0
 cd $HOME
 wget https://github.com/celestiaorg/celestia-app/releases/download/$APP_VERSION/fibre_Linux_x86_64.tar.gz
 wget https://github.com/celestiaorg/celestia-app/releases/download/$APP_VERSION/checksums.txt
@@ -319,13 +321,13 @@ cd $HOME
 rm -rf celestia-node
 git clone https://github.com/celestiaorg/celestia-node.git
 cd celestia-node/
-git checkout tags/v0.35.0
+git checkout tags/v0.36.0
 make build
 make install
 make cel-key
 ```
 
-- Version check ```celestia version``` >>> v0.35.0
+- Version check ```celestia version``` >>> v0.36.0
 
 ### Init
 - If you run your own consensus node, use its IP instead of rpc.celestia.pops.one (gRPC must be enabled on that node).
@@ -439,7 +441,7 @@ cd $HOME
 rm -rf celestia-node
 git clone https://github.com/celestiaorg/celestia-node.git
 cd celestia-node/
-git checkout tags/v0.35.0
+git checkout tags/v0.36.0
 make build
 make install
 make cel-key
@@ -504,11 +506,11 @@ rm -rf $HOME/.celestia-light
 
 ## Upgrading Bridge and Light Nodes
 
-- This section upgrades a Bridge or Light Node installed with this guide to a new release. Latest upgrade: **v0.35.0**. For future upgrades, you only need to change the NODE_VERSION line.
-- v0.35.0 removes Bitswap in favor of shrex, adds JWT token revocation and includes security and stability fixes. No coordinated upgrade is required, you can upgrade at any time.
+- This section upgrades a Bridge or Light Node installed with this guide to a new release. Latest upgrade: **v0.36.0**. For future upgrades, you only need to change the NODE_VERSION line.
+- **v0.36.0 is a required upgrade.** It adds support for celestia-app v11. Bridge and Light Nodes on older versions will stop working once v11 is activated, so upgrade before then.
 
 ### Upgrading Go
-- Building v0.35.0 requires Go 1.26.10 or later. If `go version` already shows 1.26.10 or later, skip this step.
+- Building celestia-node requires Go 1.26.10 or later. If `go version` already shows 1.26.10 or later, skip this step.
 ```
 ver="1.26.10"
 cd $HOME
@@ -522,7 +524,7 @@ go version
 
 ### Upgrading celestia-node
 ```
-NODE_VERSION=v0.35.0
+NODE_VERSION=v0.36.0
 cd $HOME/celestia-node
 git fetch --tags
 git checkout -f tags/$NODE_VERSION
